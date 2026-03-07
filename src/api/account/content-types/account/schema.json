@@ -7,7 +7,8 @@
     "displayName": "Account"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": true,
+    "populateCreatorFields": true
   },
   "pluginOptions": {},
   "attributes": {
@@ -84,7 +85,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "users_permissions_user": {
       "type": "relation",
@@ -105,6 +108,12 @@
       "target": "api::account.account",
       "comment": "Les comptes parrainés par cet utilisateur",
       "mappedBy": "referredBy"
+    },
+    "gainOrders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::gain-order.gain-order",
+      "mappedBy": "account"
     }
   }
 }

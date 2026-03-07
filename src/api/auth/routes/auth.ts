@@ -78,5 +78,17 @@
       handler: 'profile.applyReferralCode',
       config: { auth: false },
     },
+    {
+      method: 'GET',
+      path: '/gains/overview',
+      handler: 'gains.overview',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
+      path: '/gains/claim',
+      handler: 'gains.claim',
+      config: { auth: false },
+    },
   ],
 };

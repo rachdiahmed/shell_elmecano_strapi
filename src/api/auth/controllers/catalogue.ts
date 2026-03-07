@@ -1,4 +1,5 @@
 import type { Context } from "koa";
+import { verifyBearer } from "../utils/auth-utils";
 
 const toAbsoluteUrl = (url?: string | null): string | null => {
   if (!url) return null;
@@ -17,6 +18,15 @@ const mediaUrl = (media: any): string | null => {
     (Array.isArray(media?.data) && media.data.length ? media.data[0]?.url : null);
   return toAbsoluteUrl(raw);
 };
+
+const auditMeta = (entity: any) => ({
+  createdBy: entity?.createdBy
+    ? String(entity.createdBy.documentId ?? entity.createdBy.id ?? "")
+    : null,
+  updatedBy: entity?.updatedBy
+    ? String(entity.updatedBy.documentId ?? entity.updatedBy.id ?? "")
+    : null,
+});
 
 const stripHtml = (raw: string): string => {
   return raw
@@ -54,6 +64,9 @@ const richTextToPlainText = (raw: unknown): string => {
 
 export default {
   async list(ctx: Context) {
+    const payload = await verifyBearer(ctx);
+    if (!payload?.id) return ctx.unauthorized("Token invalide ou manquant");
+
     const requestedLocale = String((ctx.request.query as any)?.locale ?? "")
       .trim()
       .toLowerCase();
@@ -63,45 +76,86 @@ export default {
         ? "fr-FR"
         : undefined;
 
-    const query: any = {
-      status: "published",
-      sort: ["order:asc", "name:asc"],
-      populate: {
-        logo: true,
-        products: {
-          sort: ["order:asc", "name:asc"],
-          filters: { isActive: { $eq: true } },
-          populate: { image: true },
+    const buildQuery = (queryLocale?: string): any => {
+      const query: any = {
+        status: "published",
+        sort: ["order:asc", "name:asc"],
+        populate: {
+          createdBy: true,
+          updatedBy: true,
+          logo: true,
+          products: {
+            sort: ["order:asc", "name:asc"],
+            filters: { isActive: { $eq: true } },
+            populate: { image: true, createdBy: true, updatedBy: true },
+          },
         },
-      },
+      };
+      if (queryLocale) query.locale = queryLocale;
+      return query;
     };
-    if (locale) query.locale = locale;
 
-    const categories = (await strapi
-      .documents("api::category.category")
-      .findMany(query as any)) as any[];
+    const mapCategories = (categories: any[]) =>
+      categories
+        .map((category) => ({
+          id: String(category.documentId ?? category.id ?? ""),
+          name: String(category.name ?? "").trim(),
+          slug: String(category.slug ?? "").trim(),
+          order: Number(category.order ?? 0),
+          logoUrl: mediaUrl(category.logo),
+          ...auditMeta(category),
+          products: ((category.products ?? []) as any[])
+            .map((product) => ({
+              id: String(product.documentId ?? product.id ?? ""),
+              name: String(product.name ?? "").trim(),
+              subtitle: String(product.subtitle ?? ""),
+              cardShortDescription: String(product.cardShortDescription ?? ""),
+              description: richTextToPlainText(product.description),
+              viscosity: String(product.viscosity ?? ""),
+              reference: String(product.reference ?? ""),
+              sku: String(product.sku ?? ""),
+              gainVidange: Number(product.gainVidange ?? 0),
+              order: Number(product.order ?? 0),
+              imageUrl: mediaUrl(product.image),
+              ...auditMeta(product),
+            }))
+            .filter((p) => p.id.length > 0),
+        }))
+        .filter((c) => c.id.length > 0 && c.name.length > 0);
 
-    ctx.body = {
-      categories: categories.map((category) => ({
-        id: String(category.documentId ?? category.id ?? ""),
-        name: String(category.name ?? ""),
-        slug: String(category.slug ?? ""),
-        order: Number(category.order ?? 0),
-        logoUrl: mediaUrl(category.logo),
-        products: ((category.products ?? []) as any[]).map((product) => ({
-          id: String(product.documentId ?? product.id ?? ""),
-          name: String(product.name ?? ""),
-          subtitle: String(product.subtitle ?? ""),
-          cardShortDescription: String(product.cardShortDescription ?? ""),
-          description: richTextToPlainText(product.description),
-          viscosity: String(product.viscosity ?? ""),
-          reference: String(product.reference ?? ""),
-          sku: String(product.sku ?? ""),
-          gainVidange: Number(product.gainVidange ?? 0),
-          order: Number(product.order ?? 0),
-          imageUrl: mediaUrl(product.image),
-        })),
-      })),
+    const dedupeCategories = (categories: any[]) => {
+      const seen = new Set<string>();
+      return categories.filter((c) => {
+        const key =
+          c.slug.length > 0 ? c.slug.toLowerCase() : c.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     };
+
+    const loadForLocale = async (queryLocale?: string) => {
+      const categories = (await strapi
+        .documents("api::category.category")
+        .findMany(buildQuery(queryLocale) as any)) as any[];
+      return dedupeCategories(mapCategories(categories));
+    };
+
+    const hasProducts = (categories: any[]) =>
+      categories.some((category) => (category.products?.length ?? 0) > 0);
+
+    let mapped = await loadForLocale(locale);
+    // Fallback: if requested locale has no usable products, return default data
+    // instead of an empty catalogue.
+    if (!hasProducts(mapped) && locale) {
+      mapped = await loadForLocale(undefined);
+    }
+
+    if (!hasProducts(mapped) && locale === "ar-TN") {
+      mapped = await loadForLocale("fr-FR");
+    } else if (!hasProducts(mapped) && locale === "fr-FR") {
+      mapped = await loadForLocale("ar-TN");
+    }
+    ctx.body = { categories: mapped };
   },
 };

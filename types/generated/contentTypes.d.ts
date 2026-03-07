@@ -439,15 +439,19 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+    populateCreatorFields: true;
   };
   attributes: {
     address: Schema.Attribute.Text;
     birthDate: Schema.Attribute.Date;
     cin: Schema.Attribute.String & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
     firstName: Schema.Attribute.String & Schema.Attribute.Required;
+    gainOrders: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::gain-order.gain-order'
+    >;
     gains: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     garageName: Schema.Attribute.String;
     governorate: Schema.Attribute.String & Schema.Attribute.Required;
@@ -475,8 +479,7 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
     referredBy: Schema.Attribute.Relation<'manyToOne', 'api::account.account'>;
     taxId: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
     userId: Schema.Attribute.Integer & Schema.Attribute.Unique;
     users_permissions_user: Schema.Attribute.Relation<
       'oneToOne',
@@ -525,6 +528,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+    populateCreatorFields: true;
   };
   pluginOptions: {
     i18n: {
@@ -533,8 +537,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
     locale: Schema.Attribute.String;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -575,8 +578,50 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
         };
       }>;
     updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
+  };
+}
+
+export interface ApiGainOrderGainOrder extends Struct.CollectionTypeSchema {
+  collectionName: 'gain_orders';
+  info: {
+    displayName: 'Gain Order';
+    pluralName: 'gain-orders';
+    singularName: 'gain-order';
+  };
+  options: {
+    draftAndPublish: true;
+    populateCreatorFields: true;
+  };
+  attributes: {
+    account: Schema.Attribute.Relation<'manyToOne', 'api::account.account'>;
+    amount: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
+    deliveredAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::gain-order.gain-order'
+    > &
       Schema.Attribute.Private;
+    orderStatus: Schema.Attribute.Enumeration<
+      ['validating', 'processing', 'shipping', 'delivered', 'cancelled']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'validating'>;
+    publishedAt: Schema.Attribute.DateTime;
+    requestedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Ch\u00E8que Cadeaux'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
   };
 }
 
@@ -589,6 +634,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
   options: {
     draftAndPublish: true;
+    populateCreatorFields: true;
   };
   pluginOptions: {
     i18n: {
@@ -609,8 +655,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         };
       }>;
     createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
     description: Schema.Attribute.RichText &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
@@ -676,8 +721,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         };
       }>;
     updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
     viscosity: Schema.Attribute.String &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
@@ -1200,6 +1244,7 @@ declare module '@strapi/strapi' {
       'api::account.account': ApiAccountAccount;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::category.category': ApiCategoryCategory;
+      'api::gain-order.gain-order': ApiGainOrderGainOrder;
       'api::product.product': ApiProductProduct;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

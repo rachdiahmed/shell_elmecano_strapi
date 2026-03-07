@@ -11,7 +11,7 @@ const findAccountForUser = async (userId: number) => {
   let accounts = await strapi.documents("api::account.account").findMany({
     filters: { userId: { $eq: userId } },
     status: "published",
-    populate: ["referredAccounts", "profileImage"],
+    populate: ["referredAccounts", "profileImage", "createdBy", "updatedBy"],
     limit: 1,
   } as any);
 
@@ -37,7 +37,7 @@ const findAccountForUser = async (userId: number) => {
   accounts = await strapi.documents("api::account.account").findMany({
     filters: { userId: { $eq: userId } },
     status: "published",
-    populate: ["referredAccounts", "profileImage"],
+    populate: ["referredAccounts", "profileImage", "createdBy", "updatedBy"],
     limit: 1,
   } as any);
 
@@ -49,6 +49,15 @@ const toNumber = (value: unknown): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
+const withAuditMeta = (entity: any) => ({
+  createdBy: entity?.createdBy
+    ? String(entity.createdBy.documentId ?? entity.createdBy.id ?? "")
+    : null,
+  updatedBy: entity?.updatedBy
+    ? String(entity.updatedBy.documentId ?? entity.updatedBy.id ?? "")
+    : null,
+});
+
 export default {
   async me(ctx: Context) {
     const payload = await verifyBearer(ctx);
@@ -59,7 +68,7 @@ export default {
 
     const referralReward = await getGlobalReferralReward();
     ctx.body = {
-      account: normalizeAccount(account),
+      account: { ...normalizeAccount(account), ...withAuditMeta(account) },
       referralReward,
     };
   },
@@ -112,12 +121,12 @@ export default {
     const refreshed = await strapi.documents("api::account.account").findOne({
       documentId: current.documentId,
       status: "published",
-      populate: ["profileImage"],
+      populate: ["profileImage", "createdBy", "updatedBy"],
     } as any);
 
     const referralReward = await getGlobalReferralReward();
     ctx.body = {
-      account: normalizeAccount(refreshed),
+      account: { ...normalizeAccount(refreshed), ...withAuditMeta(refreshed) },
       referralReward,
     };
   },
@@ -166,12 +175,12 @@ export default {
     const refreshed = await strapi.documents("api::account.account").findOne({
       documentId: current.documentId,
       status: "published",
-      populate: ["profileImage", "referredBy"],
+      populate: ["profileImage", "referredBy", "createdBy", "updatedBy"],
     } as any);
 
     const referralReward = await getGlobalReferralReward();
     ctx.body = {
-      account: normalizeAccount(refreshed),
+      account: { ...normalizeAccount(refreshed), ...withAuditMeta(refreshed) },
       referralReward,
     };
   },

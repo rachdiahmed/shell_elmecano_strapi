@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gain_orders",
+  "info": {
+    "singularName": "gain-order",
+    "pluralName": "gain-orders",
+    "displayName": "Gain Order"
+  },
+  "options": {
+    "draftAndPublish": true,
+    "populateCreatorFields": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "code": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "title": {
+      "type": "string",
+      "default": "Chèque Cadeaux",
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "required": true,
+      "default": "validating",
+      "enum": [
+        "validating",
+        "processing",
+        "shipping",
+        "delivered",
+        "cancelled"
+      ]
+    },
+    "requestedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "deliveredAt": {
+      "type": "datetime",
+      "required": false
+    },
+    "account": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::account.account",
+      "inversedBy": "gainOrders"
+    }
+  }
+}
