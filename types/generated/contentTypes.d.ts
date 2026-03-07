@@ -451,6 +451,8 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
     gains: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     garageName: Schema.Attribute.String;
     governorate: Schema.Attribute.String & Schema.Attribute.Required;
+    hasCompletedProfile: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     lastName: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -463,10 +465,9 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     phone: Schema.Attribute.String & Schema.Attribute.Required;
     postalCode: Schema.Attribute.String;
-    profileImagePath: Schema.Attribute.String;
+    profileImage: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     rank: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    referralCode: Schema.Attribute.String;
     referredAccounts: Schema.Attribute.Relation<
       'oneToMany',
       'api::account.account'
@@ -482,6 +483,8 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
       'plugin::users-permissions.user'
     >;
     vidangesCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    wantNewsletterSubscription: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
   };
 }
 

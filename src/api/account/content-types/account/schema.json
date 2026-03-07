@@ -39,14 +39,18 @@
       "type": "string",
       "required": false
     },
-    "referralCode": {
-      "type": "string",
-      "required": false
-    },
     "ownReferralCode": {
       "type": "string",
       "required": true,
       "unique": true
+    },
+    "wantNewsletterSubscription": {
+      "type": "boolean",
+      "default": false
+    },
+    "hasCompletedProfile": {
+      "type": "boolean",
+      "default": false
     },
     "gains": {
       "type": "decimal",
@@ -76,13 +80,11 @@
       "type": "string",
       "required": false
     },
-    "profileImagePath": {
-      "type": "string",
-      "required": false
-    },
-    "profileImageUrl": {
-      "type": "string",
-      "required": false
+    "profileImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
     },
     "users_permissions_user": {
       "type": "relation",
