@@ -72,5 +72,11 @@
       handler: 'profile.updateMe',
       config: { auth: false },
     },
+    {
+      method: 'POST',
+      path: '/profile/referral',
+      handler: 'profile.applyReferralCode',
+      config: { auth: false },
+    },
   ],
 };

@@ -39,6 +39,19 @@ export default {
     if (existingUsers?.length) return ctx.conflict("Email deja utilise");
 
     const normalizedPhone = normalizePhone(phone);
+    if (!normalizedPhone) return ctx.badRequest("Phone required");
+
+    const existingPhoneAccounts = await strapi
+      .documents("api::account.account")
+      .findMany({
+        filters: { phone: normalizedPhone },
+        status: "published",
+        limit: 1,
+      } as any);
+    if (existingPhoneAccounts?.length) {
+      return ctx.conflict("Phone deja utilise");
+    }
+
     const normalizedReferralCode =
       normalizeOwnReferralCode(sponsorOwnReferralCode);
     if (
