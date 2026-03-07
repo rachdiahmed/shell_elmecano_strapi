@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "app_settings",
+  "info": {
+    "singularName": "app-setting",
+    "pluralName": "app-settings",
+    "displayName": "App Setting"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "referralReward": {
+      "type": "decimal",
+      "default": 0,
+      "comment": "Montant DT gagné par parrainage — configuré via backoffice, global pour tous les utilisateurs"
+    }
+  }
+}

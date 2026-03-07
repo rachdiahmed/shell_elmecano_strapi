@@ -1,0 +1,108 @@
+{
+  "kind": "collectionType",
+  "collectionName": "accounts",
+  "info": {
+    "singularName": "account",
+    "pluralName": "accounts",
+    "displayName": "Account"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "userId": {
+      "type": "integer",
+      "unique": true
+    },
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "cin": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "governorate": {
+      "type": "string",
+      "required": true
+    },
+    "taxId": {
+      "type": "string",
+      "required": false
+    },
+    "referralCode": {
+      "type": "string",
+      "required": false
+    },
+    "ownReferralCode": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "gains": {
+      "type": "decimal",
+      "default": 0
+    },
+    "rank": {
+      "type": "integer",
+      "default": 0
+    },
+    "vidangesCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "garageName": {
+      "type": "string",
+      "required": false
+    },
+    "address": {
+      "type": "text",
+      "required": false
+    },
+    "birthDate": {
+      "type": "date",
+      "required": false
+    },
+    "postalCode": {
+      "type": "string",
+      "required": false
+    },
+    "profileImagePath": {
+      "type": "string",
+      "required": false
+    },
+    "profileImageUrl": {
+      "type": "string",
+      "required": false
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "account"
+    },
+    "referredBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::account.account",
+      "comment": "Le compte qui a parrainé cet utilisateur",
+      "inversedBy": "referredAccounts"
+    },
+    "referredAccounts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::account.account",
+      "comment": "Les comptes parrainés par cet utilisateur",
+      "mappedBy": "referredBy"
+    }
+  }
+}
