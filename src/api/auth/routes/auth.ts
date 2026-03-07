@@ -56,6 +56,12 @@
     },
     {
       method: 'GET',
+      path: '/catalogue',
+      handler: 'catalogue.list',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
       path: '/profile/me',
       handler: 'profile.me',
       config: { auth: false },
