@@ -2,6 +2,19 @@ import type { Context } from "koa";
 import { issueJwt, normalizePhone } from "../utils/auth-utils";
 
 export default {
+  async checkPhone(ctx: Context) {
+    const phone = normalizePhone((ctx.request.query as any)?.phone);
+    if (!phone) return ctx.badRequest("Phone required");
+
+    const accounts = await strapi.documents("api::account.account").findMany({
+      filters: { phone },
+      status: "published",
+      limit: 1,
+    } as any);
+
+    ctx.body = { exists: accounts.length > 0 };
+  },
+
   async send(ctx: Context) {
     const phone = normalizePhone((ctx.request.body as any)?.phone);
     if (!phone) return ctx.badRequest("Phone required");
@@ -45,12 +58,15 @@ export default {
 
     const account = accounts[0] as any;
     const linkedUser = account.users_permissions_user as any;
-    if (!linkedUser) return ctx.internalServerError("User link missing");
+    const userId = Number(account.userId ?? linkedUser?.id ?? 0);
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return ctx.internalServerError("User link missing");
+    }
 
-    const user = await strapi
-      .plugin("users-permissions")
-      .service("user")
-      .fetch({ id: linkedUser.id }, {});
+    const user = await strapi.query("plugin::users-permissions.user").findOne({
+      where: { id: userId },
+    } as any);
+    if (!user) return ctx.notFound("User not found");
 
     const jwt = issueJwt(user.id);
     strapi.service("api::auth.otp-store").clear(phone);

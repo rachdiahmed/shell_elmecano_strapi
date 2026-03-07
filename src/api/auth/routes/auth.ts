@@ -7,6 +7,18 @@
       config: { auth: false },
     },
     {
+      method: 'GET',
+      path: '/check-phone',
+      handler: 'otp.checkPhone',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
+      path: '/otp/check-phone',
+      handler: 'otp.checkPhone',
+      config: { auth: false },
+    },
+    {
       method: 'POST',
       path: '/otp/verify',
       handler: 'otp.verify',
