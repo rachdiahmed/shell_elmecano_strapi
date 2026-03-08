@@ -55,6 +55,12 @@
       config: { auth: false },
     },
     {
+      method: 'POST',
+      path: '/logout',
+      handler: 'session.logout',
+      config: { auth: false },
+    },
+    {
       method: 'GET',
       path: '/catalogue',
       handler: 'catalogue.list',

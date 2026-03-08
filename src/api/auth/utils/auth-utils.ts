@@ -1,4 +1,5 @@
 import type { Context } from "koa";
+import { isTokenRevoked } from "../services/token-revocation";
 
 export const normalizePhone = (input?: string): string =>
   String(input ?? "").replace(/\D/g, "");
@@ -39,14 +40,21 @@ export const generateUniqueOwnReferralCode = async (): Promise<string> => {
 export const issueJwt = (userId: number): string =>
   strapi.plugin("users-permissions").service("jwt").issue({ id: userId });
 
-export const verifyBearer = async (ctx: Context): Promise<any | null> => {
+export const getBearerToken = (ctx: Context): string | null => {
   const authHeader = (ctx.request.headers as any).authorization ?? "";
   if (!authHeader.startsWith("Bearer ")) return null;
+  return authHeader.slice(7).trim();
+};
+
+export const verifyBearer = async (ctx: Context): Promise<any | null> => {
+  const token = getBearerToken(ctx);
+  if (!token) return null;
+  if (isTokenRevoked(token)) return null;
   try {
     return await strapi
       .plugin("users-permissions")
       .service("jwt")
-      .verify(authHeader.slice(7));
+      .verify(token);
   } catch {
     return null;
   }
