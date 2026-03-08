@@ -8,7 +8,8 @@ type GainOrderStatus =
   | "delivered"
   | "cancelled";
 
-const CLAIM_STEP = 10;
+const CLAIM_STEP = 5;
+const DEFAULT_HISTORY_PAGE_SIZE = 5;
 
 const toNumber = (value: unknown): number => {
   const n = Number(value ?? 0);
@@ -53,7 +54,23 @@ const findAccountForUser = async (userId: number) => {
   return accounts.length ? (accounts[0] as any) : null;
 };
 
-const buildOverview = async (account: any) => {
+const parsePositiveInt = (value: unknown, fallback: number): number => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  const i = Math.floor(n);
+  return i > 0 ? i : fallback;
+};
+
+const buildOverview = async (
+  account: any,
+  options?: { page?: number; pageSize?: number }
+) => {
+  const page = parsePositiveInt(options?.page, 1);
+  const pageSize = parsePositiveInt(
+    options?.pageSize,
+    DEFAULT_HISTORY_PAGE_SIZE
+  );
+  const start = (page - 1) * pageSize;
   const balance = round3(toNumber(account?.gains));
   const claimableAmount = Math.floor(balance / CLAIM_STEP) * CLAIM_STEP;
 
@@ -76,8 +93,19 @@ const buildOverview = async (account: any) => {
     sort: ["deliveredAt:desc", "requestedAt:desc", "createdAt:desc"],
     status: "published",
     populate: ["createdBy", "updatedBy"],
-    limit: 25,
+    start,
+    limit: pageSize,
   } as any);
+
+  const historyTotal = await (strapi.db as any)
+    .query("api::gain-order.gain-order")
+    .count({
+      where: {
+        account: { id: { $eq: account.id } },
+        orderStatus: { $in: ["delivered", "cancelled"] },
+        publishedAt: { $notNull: true },
+      },
+    });
 
   const hasActiveOrder = nonDelivered.length > 0;
 
@@ -88,6 +116,10 @@ const buildOverview = async (account: any) => {
     hasActiveOrder,
     canClaim: claimableAmount >= CLAIM_STEP && !hasActiveOrder,
     activeOrder: hasActiveOrder ? normalizeOrder(nonDelivered[0]) : null,
+    historyPage: page,
+    historyPageSize: pageSize,
+    historyTotal: Number(historyTotal ?? 0),
+    hasMoreHistory: start + historyOrders.length < Number(historyTotal ?? 0),
     history: historyOrders.map(normalizeOrder),
   };
 };
@@ -100,7 +132,12 @@ export default {
     const account = await findAccountForUser(payload.id as number);
     if (!account) return ctx.notFound("Compte introuvable");
 
-    ctx.body = await buildOverview(account);
+    const page = parsePositiveInt((ctx.query as any)?.page, 1);
+    const pageSize = parsePositiveInt(
+      (ctx.query as any)?.pageSize,
+      DEFAULT_HISTORY_PAGE_SIZE
+    );
+    ctx.body = await buildOverview(account, { page, pageSize });
   },
 
   async claim(ctx: Context) {
@@ -165,6 +202,9 @@ export default {
     const refreshed = await findAccountForUser(payload.id as number);
     if (!refreshed) return ctx.notFound("Compte introuvable");
 
-    ctx.body = await buildOverview(refreshed);
+    ctx.body = await buildOverview(refreshed, {
+      page: 1,
+      pageSize: DEFAULT_HISTORY_PAGE_SIZE,
+    });
   },
 };

@@ -90,5 +90,17 @@
       handler: 'gains.claim',
       config: { auth: false },
     },
+    {
+      method: 'GET',
+      path: '/ranking/weekly',
+      handler: 'ranking.weekly',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
+      path: '/ranking/stream',
+      handler: 'ranking.stream',
+      config: { auth: false },
+    },
   ],
 };
