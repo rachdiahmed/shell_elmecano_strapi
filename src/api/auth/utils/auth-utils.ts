@@ -84,11 +84,15 @@ export const getGlobalReferralReward = async (): Promise<number> => {
 const toAbsoluteUrl = (url?: string | null): string | null => {
   if (!url) return null;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  const serverUrl =
+  const rawBase =
+    process.env.STRAPI_PUBLIC_URL ||
     process.env.PUBLIC_URL ||
     process.env.STRAPI_URL ||
     `http://localhost:${process.env.PORT || "1337"}`;
-  return `${serverUrl.replace(/\/$/, "")}${url}`;
+  const base = rawBase
+    .replace(/\/+$/, "")
+    .replace(/\/api$/i, "");
+  return `${base}/${url.replace(/^\/+/, "")}`;
 };
 
 export const normalizeAccount = (account: any) => {
