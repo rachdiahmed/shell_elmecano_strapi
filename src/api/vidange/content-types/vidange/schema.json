@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "vidanges",
+  "info": {
+    "singularName": "vidange",
+    "pluralName": "vidanges",
+    "displayName": "Vidange"
+  },
+  "options": {
+    "draftAndPublish": true,
+    "populateCreatorFields": true
+  },
+  "attributes": {
+    "uniqueCode": {
+      "type": "string",
+      "required": true
+    },
+    "lotNumber": {
+      "type": "string",
+      "required": true
+    },
+    "consumedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "gainAwarded": {
+      "type": "decimal",
+      "default": 0
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
+    },
+    "account": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::account.account"
+    }
+  }
+}

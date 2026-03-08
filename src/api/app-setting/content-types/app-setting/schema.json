@@ -14,7 +14,19 @@
     "referralReward": {
       "type": "decimal",
       "default": 0,
-      "comment": "Montant DT gagné par parrainage — configuré via backoffice, global pour tous les utilisateurs"
+      "comment": "Montant DT gagne par parrainage configure via backoffice, global pour tous les utilisateurs"
+    },
+    "vidangeHelpVideoUrl": {
+      "type": "string",
+      "required": false
+    },
+    "vidangeHelpImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

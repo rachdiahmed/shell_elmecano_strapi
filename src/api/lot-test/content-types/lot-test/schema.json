@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "lot_tests",
+  "info": {
+    "singularName": "lot-test",
+    "pluralName": "lot-tests",
+    "displayName": "Lot Test"
+  },
+  "options": {
+    "draftAndPublish": true,
+    "populateCreatorFields": true
+  },
+  "attributes": {
+    "lotNumber": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "uniqueCode": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "isConsumed": {
+      "type": "boolean",
+      "default": false
+    },
+    "consumedAt": {
+      "type": "datetime",
+      "required": false
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
+    },
+    "consumedByAccount": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::account.account"
+    }
+  }
+}

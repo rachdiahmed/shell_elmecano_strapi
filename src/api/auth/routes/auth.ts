@@ -102,5 +102,17 @@
       handler: 'ranking.stream',
       config: { auth: false },
     },
+    {
+      method: 'GET',
+      path: '/vidange/metadata',
+      handler: 'vidange.metadata',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
+      path: '/vidange/consume',
+      handler: 'vidange.consume',
+      config: { auth: false },
+    },
   ],
 };

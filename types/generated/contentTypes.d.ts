@@ -516,6 +516,8 @@ export interface ApiAppSettingAppSetting extends Struct.SingleTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    vidangeHelpImage: Schema.Attribute.Media<'images'>;
+    vidangeHelpVideoUrl: Schema.Attribute.String;
   };
 }
 
@@ -625,6 +627,46 @@ export interface ApiGainOrderGainOrder extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiLotTestLotTest extends Struct.CollectionTypeSchema {
+  collectionName: 'lot_tests';
+  info: {
+    displayName: 'Lot Test';
+    pluralName: 'lot-tests';
+    singularName: 'lot-test';
+  };
+  options: {
+    draftAndPublish: true;
+    populateCreatorFields: true;
+  };
+  attributes: {
+    consumedAt: Schema.Attribute.DateTime;
+    consumedByAccount: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::account.account'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    isConsumed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::lot-test.lot-test'
+    > &
+      Schema.Attribute.Private;
+    lotNumber: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    uniqueCode: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -728,6 +770,38 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
           localized: true;
         };
       }>;
+  };
+}
+
+export interface ApiVidangeVidange extends Struct.CollectionTypeSchema {
+  collectionName: 'vidanges';
+  info: {
+    displayName: 'Vidange';
+    pluralName: 'vidanges';
+    singularName: 'vidange';
+  };
+  options: {
+    draftAndPublish: true;
+    populateCreatorFields: true;
+  };
+  attributes: {
+    account: Schema.Attribute.Relation<'manyToOne', 'api::account.account'>;
+    consumedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
+    gainAwarded: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::vidange.vidange'
+    > &
+      Schema.Attribute.Private;
+    lotNumber: Schema.Attribute.String & Schema.Attribute.Required;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    uniqueCode: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>;
   };
 }
 
@@ -1245,7 +1319,9 @@ declare module '@strapi/strapi' {
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::category.category': ApiCategoryCategory;
       'api::gain-order.gain-order': ApiGainOrderGainOrder;
+      'api::lot-test.lot-test': ApiLotTestLotTest;
       'api::product.product': ApiProductProduct;
+      'api::vidange.vidange': ApiVidangeVidange;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
