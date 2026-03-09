@@ -1,5 +1,6 @@
 import type { Context } from "koa";
 import { getBearerToken, verifyBearer } from "../utils/auth-utils";
+import { deactivateDeviceToken } from "../services/push-device";
 import { revokeToken } from "../services/token-revocation";
 
 export default {
@@ -12,6 +13,7 @@ export default {
 
     const exp = typeof payload.exp === "number" ? payload.exp : undefined;
     revokeToken(token, exp);
+    await deactivateDeviceToken(Number(payload.id), null);
 
     ctx.body = {
       success: true,
@@ -19,4 +21,3 @@ export default {
     };
   },
 };
-

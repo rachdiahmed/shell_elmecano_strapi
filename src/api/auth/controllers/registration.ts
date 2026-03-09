@@ -113,9 +113,12 @@ export default {
     });
 
     if (referredByDocumentId) {
-      await strapi
-        .service("api::auth.referral")
-        .applyReferralForNewAccount(referredByDocumentId);
+      const referralService = strapi.service("api::auth.referral");
+      await referralService.applyReferralForNewAccount(referredByDocumentId);
+      await referralService.notifySponsorReferralUsed(
+        referredByDocumentId,
+        `${firstName ?? ""} ${lastName ?? ""}`.trim()
+      );
     }
 
     const jwt = issueJwt(user.id);

@@ -168,9 +168,12 @@ export default {
       status: "published",
     } as any);
 
-    await strapi
-      .service("api::auth.referral")
-      .applyReferralForNewAccount(sponsor.documentId);
+    const referralService = strapi.service("api::auth.referral");
+    await referralService.applyReferralForNewAccount(sponsor.documentId);
+    await referralService.notifySponsorReferralUsed(
+      sponsor.documentId,
+      `${current.firstName ?? ""} ${current.lastName ?? ""}`.trim()
+    );
 
     const refreshed = await strapi.documents("api::account.account").findOne({
       documentId: current.documentId,

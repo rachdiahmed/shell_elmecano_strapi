@@ -89,6 +89,12 @@
         "images"
       ]
     },
+    "notificationDevices": {
+      "type": "json"
+    },
+    "inAppNotifications": {
+      "type": "json"
+    },
     "users_permissions_user": {
       "type": "relation",
       "relation": "oneToOne",

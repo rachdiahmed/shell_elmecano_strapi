@@ -61,6 +61,18 @@
       config: { auth: false },
     },
     {
+      method: 'POST',
+      path: '/notifications/device/register',
+      handler: 'notifications.registerDevice',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
+      path: '/notifications/device/unregister',
+      handler: 'notifications.unregisterDevice',
+      config: { auth: false },
+    },
+    {
       method: 'GET',
       path: '/catalogue',
       handler: 'catalogue.list',

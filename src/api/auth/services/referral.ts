@@ -40,7 +40,25 @@ const applyReferralForNewAccount = async (sponsorDocumentId: string) => {
   } as any);
 };
 
+const notifySponsorReferralUsed = async (
+  sponsorDocumentId: string,
+  referredDisplayName?: string
+) => {
+  const name = String(referredDisplayName ?? "").trim();
+  const suffix = name ? ` (${name})` : "";
+  await strapi.service("api::auth.notification-center").createInAppNotification(
+    sponsorDocumentId,
+    {
+      type: "referral_used",
+      title: "Parrainage utilisé",
+      body: `Votre code de parrainage a été utilisé${suffix}.`,
+      data: { referredDisplayName: name || null },
+    }
+  );
+};
+
 export default {
   findSponsorByOwnReferralCode,
   applyReferralForNewAccount,
+  notifySponsorReferralUsed,
 };

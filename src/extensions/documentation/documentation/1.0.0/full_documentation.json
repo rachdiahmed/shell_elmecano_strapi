@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-03-08T14:50:19.590Z"
+    "x-generation-date": "2026-03-09T01:34:09.733Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -3918,6 +3918,8 @@
                 ],
                 "example": "string or id"
               },
+              "notificationDevices": {},
+              "inAppNotifications": {},
               "users_permissions_user": {
                 "oneOf": [
                   {
@@ -4911,6 +4913,8 @@
               }
             }
           },
+          "notificationDevices": {},
+          "inAppNotifications": {},
           "users_permissions_user": {
             "type": "object",
             "properties": {
@@ -5424,6 +5428,8 @@
                       }
                     }
                   },
+                  "notificationDevices": {},
+                  "inAppNotifications": {},
                   "users_permissions_user": {
                     "type": "object",
                     "properties": {
@@ -9821,6 +9827,8 @@
                   }
                 }
               },
+              "notificationDevices": {},
+              "inAppNotifications": {},
               "users_permissions_user": {
                 "type": "object",
                 "properties": {

@@ -457,6 +457,7 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
     governorate: Schema.Attribute.String & Schema.Attribute.Required;
     hasCompletedProfile: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
+    inAppNotifications: Schema.Attribute.JSON;
     lastName: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -464,6 +465,7 @@ export interface ApiAccountAccount extends Struct.CollectionTypeSchema {
       'api::account.account'
     > &
       Schema.Attribute.Private;
+    notificationDevices: Schema.Attribute.JSON;
     ownReferralCode: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
