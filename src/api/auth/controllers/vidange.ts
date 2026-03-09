@@ -67,10 +67,10 @@ export default {
     const uniqueCode = normalizeCode((ctx.request.body as any)?.uniqueCode);
     const lotNumber = normalizeLot((ctx.request.body as any)?.lotNumber);
     if (uniqueCode.length != 12) {
-      return ctx.badRequest("Code unique invalide (12 caracteres requis)");
+      return ctx.badRequest("Code unique invalide (12 caractères requis)");
     }
     if (lotNumber.length < 4) {
-      return ctx.badRequest("Numero du lot invalide");
+      return ctx.badRequest("Numéro du lot invalide");
     }
 
     const account = await findAccountForUser(payload.id as number);
@@ -83,26 +83,19 @@ export default {
         isActive: { $eq: true },
         isConsumed: { $eq: false },
       } as any,
-      populate: {
-        product: {
-          fields: ["name", "gainVidange"] as any,
-        },
-      },
+      fields: ["productName", "reward"] as any,
       status: "published",
       limit: 1,
     } as any)) as any[];
 
     if (lots.length === 0) {
-      return ctx.badRequest("Code ou numero du lot invalide");
+      return ctx.badRequest("Code ou numéro du lot invalide");
     }
 
     const lot = lots[0];
-    const product = lot?.product;
-    if (!product?.documentId) {
-      return ctx.badRequest("Produit non attribue a ce lot");
-    }
-
-    const gain = round3(toNumber(product.gainVidange));
+    const productName = String(lot?.productName ?? "").trim();
+    if (!productName) return ctx.badRequest("Produit non attribué à ce lot");
+    const gain = round3(toNumber(lot?.reward));
     const nowIso = new Date().toISOString();
 
     await strapi.documents("api::vidange.vidange").create({
@@ -111,7 +104,6 @@ export default {
         lotNumber,
         consumedAt: nowIso,
         gainAwarded: gain,
-        product: product.documentId,
         account: account.documentId,
       } as any,
       status: "published",
@@ -146,8 +138,8 @@ export default {
       consumedAt: nowIso,
       gainAwarded: gain,
       product: {
-        id: String(product.documentId),
-        name: String(product.name ?? ""),
+        id: "",
+        name: productName,
       },
       totals: {
         gains: nextGains,

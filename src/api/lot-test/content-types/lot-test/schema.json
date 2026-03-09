@@ -33,10 +33,14 @@
       "type": "datetime",
       "required": false
     },
-    "product": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::product.product"
+    "productName": {
+      "type": "string",
+      "required": true
+    },
+    "reward": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
     },
     "consumedByAccount": {
       "type": "relation",
