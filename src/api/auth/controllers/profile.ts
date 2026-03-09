@@ -49,6 +49,14 @@ const toNumber = (value: unknown): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
+const isValidAddressFormat = (value: string): boolean => {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return true;
+  return /^(?=.{5,120}$)(?=.*[A-Za-zÀ-ÖØ-öø-ÿ])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ0-9\s,'./-]+$/.test(
+    trimmed
+  );
+};
+
 const withAuditMeta = (entity: any) => ({
   createdBy: entity?.createdBy
     ? String(entity.createdBy.documentId ?? entity.createdBy.id ?? "")
@@ -164,7 +172,12 @@ export default {
     const data: any = {};
 
     if (typeof body.garageName === "string") data.garageName = body.garageName;
-    if (typeof body.address === "string") data.address = body.address;
+    if (typeof body.address === "string") {
+      if (!isValidAddressFormat(body.address)) {
+        return ctx.badRequest("PROFILE_INVALID_ADDRESS_FORMAT");
+      }
+      data.address = body.address.trim();
+    }
     if (typeof body.birthDate === "string") data.birthDate = body.birthDate;
     if (typeof body.postalCode === "string") data.postalCode = body.postalCode;
 
