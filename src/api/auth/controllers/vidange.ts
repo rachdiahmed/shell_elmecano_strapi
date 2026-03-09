@@ -41,7 +41,7 @@ const findAccountForUser = async (userId: number) => {
 export default {
   async metadata(ctx: Context) {
     const payload = await verifyBearer(ctx);
-    if (!payload?.id) return ctx.unauthorized("Token invalide ou manquant");
+    if (!payload?.id) return ctx.unauthorized("AUTH_TOKEN_INVALID");
 
     const settings = (await strapi.documents("api::app-setting.app-setting").findFirst({
       fields: ["vidangeHelpVideoUrl"] as any,
@@ -62,19 +62,19 @@ export default {
 
   async consume(ctx: Context) {
     const payload = await verifyBearer(ctx);
-    if (!payload?.id) return ctx.unauthorized("Token invalide ou manquant");
+    if (!payload?.id) return ctx.unauthorized("AUTH_TOKEN_INVALID");
 
     const uniqueCode = normalizeCode((ctx.request.body as any)?.uniqueCode);
     const lotNumber = normalizeLot((ctx.request.body as any)?.lotNumber);
     if (uniqueCode.length != 12) {
-      return ctx.badRequest("Code unique invalide (12 caractères requis)");
+      return ctx.badRequest("VIDANGE_INVALID_UNIQUE_CODE");
     }
     if (lotNumber.length < 4) {
-      return ctx.badRequest("Numéro du lot invalide");
+      return ctx.badRequest("VIDANGE_INVALID_LOT_NUMBER");
     }
 
     const account = await findAccountForUser(payload.id as number);
-    if (!account) return ctx.notFound("Compte introuvable");
+    if (!account) return ctx.notFound("VIDANGE_ACCOUNT_NOT_FOUND");
 
     const lots = (await strapi.documents("api::lot-test.lot-test").findMany({
       filters: {
@@ -89,12 +89,12 @@ export default {
     } as any)) as any[];
 
     if (lots.length === 0) {
-      return ctx.badRequest("Code ou numéro du lot invalide");
+      return ctx.badRequest("VIDANGE_INVALID_CODE_OR_LOT");
     }
 
     const lot = lots[0];
     const productName = String(lot?.productName ?? "").trim();
-    if (!productName) return ctx.badRequest("Produit non attribué à ce lot");
+    if (!productName) return ctx.badRequest("VIDANGE_PRODUCT_NOT_ASSIGNED");
     const gain = round3(toNumber(lot?.reward));
     const nowIso = new Date().toISOString();
 
