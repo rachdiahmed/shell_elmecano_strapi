@@ -13,8 +13,7 @@
   "attributes": {
     "lotNumber": {
       "type": "string",
-      "required": true,
-      "unique": true
+      "required": true
     },
     "uniqueCode": {
       "type": "string",
