@@ -209,6 +209,16 @@ export default {
         Number.isFinite(Number(current.id)) ? Number(current.id) : null,
         profileImageId
       );
+      try {
+        const folder = await ensureUserUploadFolder(String(current.documentId ?? ""));
+        const folderId = Number(folder?.id ?? 0) || null;
+        if (folderId != null) {
+          await strapi
+            .plugin("upload")
+            .service("upload")
+            .updateFileInfo(profileImageId, { folder: folderId });
+        }
+      } catch {}
     }
 
     const refreshed = await strapi.documents("api::account.account").findOne({
