@@ -52,7 +52,7 @@ const toNumber = (value: unknown): number => {
 const isValidAddressFormat = (value: string): boolean => {
   const trimmed = String(value ?? "").trim();
   if (!trimmed) return true;
-  return /^(?=.{5,120}$)(?=.*[A-Za-zÀ-ÖØ-öø-ÿ])(?=.*\d)[A-Za-zÀ-ÖØ-öø-ÿ0-9\s,'./-]+$/.test(
+  return /^(?=.{5,120}$)(?=.*[A-Za-zÀ-ÖØ-öø-ÿ])[A-Za-zÀ-ÖØ-öø-ÿ0-9\s,'./-]+$/.test(
     trimmed
   );
 };
