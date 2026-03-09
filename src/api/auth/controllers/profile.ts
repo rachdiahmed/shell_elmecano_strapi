@@ -58,6 +58,44 @@ const withAuditMeta = (entity: any) => ({
     : null,
 });
 
+const ensureProfileImageLinked = async (
+  accountDocumentId: string,
+  accountEntityId: number | null,
+  profileImageId: number
+) => {
+  // Try with documents API (direct id form)
+  try {
+    await strapi.documents("api::account.account").update({
+      documentId: accountDocumentId,
+      data: { profileImage: profileImageId } as any,
+      status: "published",
+    } as any);
+    return;
+  } catch {}
+
+  // Try with documents API (connect form)
+  try {
+    await strapi.documents("api::account.account").update({
+      documentId: accountDocumentId,
+      data: { profileImage: { connect: [profileImageId] } } as any,
+      status: "published",
+    } as any);
+    return;
+  } catch {}
+
+  // Final fallback with entityService by numeric entity id.
+  if (accountEntityId != null && Number.isFinite(accountEntityId)) {
+    try {
+      await strapi.entityService.update("api::account.account", accountEntityId, {
+        data: { profileImage: profileImageId } as any,
+      });
+      return;
+    } catch {}
+  }
+
+  throw new Error("Impossible de lier l'image de profil au compte");
+};
+
 export default {
   async me(ctx: Context) {
     const payload = await verifyBearer(ctx);
@@ -85,11 +123,13 @@ export default {
     if (typeof body.birthDate === "string") data.birthDate = body.birthDate;
     if (typeof body.postalCode === "string") data.postalCode = body.postalCode;
 
-    const profileImageId =
+    const parsedProfileImageId =
       typeof body.profileImageId === "number"
         ? body.profileImageId
         : Number.parseInt(body.profileImageId, 10);
-    if (Number.isFinite(profileImageId)) data.profileImage = profileImageId;
+    const profileImageId = Number.isFinite(parsedProfileImageId)
+      ? parsedProfileImageId
+      : null;
 
     const current = await findAccountForUser(payload.id as number);
     if (!current) return ctx.notFound("Compte introuvable");
@@ -117,6 +157,14 @@ export default {
       data,
       status: "published",
     } as any);
+
+    if (profileImageId != null) {
+      await ensureProfileImageLinked(
+        String(current.documentId ?? ""),
+        Number.isFinite(Number(current.id)) ? Number(current.id) : null,
+        profileImageId
+      );
+    }
 
     const refreshed = await strapi.documents("api::account.account").findOne({
       documentId: current.documentId,
