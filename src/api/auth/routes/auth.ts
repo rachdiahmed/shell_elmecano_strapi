@@ -85,6 +85,12 @@
       config: { auth: false },
     },
     {
+      method: 'GET',
+      path: '/profile/upload-folder',
+      handler: 'profile.uploadFolder',
+      config: { auth: false },
+    },
+    {
       method: 'PUT',
       path: '/profile/me',
       handler: 'profile.updateMe',

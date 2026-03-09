@@ -656,11 +656,12 @@ export interface ApiLotTestLotTest extends Struct.CollectionTypeSchema {
       'api::lot-test.lot-test'
     > &
       Schema.Attribute.Private;
-    lotNumber: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    lotNumber: Schema.Attribute.String & Schema.Attribute.Required;
+    productName: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    reward: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
     uniqueCode: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;

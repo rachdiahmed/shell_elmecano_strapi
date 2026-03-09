@@ -96,7 +96,52 @@ const ensureProfileImageLinked = async (
   throw new Error("Impossible de lier l'image de profil au compte");
 };
 
+const ensureUserUploadFolder = async (accountDocumentId: string) => {
+  const apiUploadFolder = await strapi
+    .plugin("upload")
+    .service("api-upload-folder")
+    .getAPIUploadFolder();
+  const folderService = strapi.plugin("upload").service("folder");
+  const parentId = Number(apiUploadFolder?.id ?? 0) || null;
+  const name = String(accountDocumentId ?? "").trim();
+  if (!name) throw new Error("Account documentId manquant");
+
+  const exists = await folderService.exists({
+    name,
+    parent: parentId,
+  });
+  if (!exists) {
+    const created = await folderService.create({
+      name,
+      parent: parentId,
+    });
+    return created;
+  }
+
+  const found = await strapi.db.query("plugin::upload.folder").findOne({
+    where: {
+      name,
+      parent: parentId,
+    },
+  });
+  return found;
+};
+
 export default {
+  async uploadFolder(ctx: Context) {
+    const payload = await verifyBearer(ctx);
+    if (!payload?.id) return ctx.unauthorized("AUTH_TOKEN_INVALID");
+
+    const account = await findAccountForUser(payload.id as number);
+    if (!account) return ctx.notFound("VIDANGE_ACCOUNT_NOT_FOUND");
+
+    const folder = await ensureUserUploadFolder(String(account.documentId ?? ""));
+    ctx.body = {
+      folderId: Number(folder?.id ?? 0) || null,
+      folderName: String(folder?.name ?? ""),
+    };
+  },
+
   async me(ctx: Context) {
     const payload = await verifyBearer(ctx);
     if (!payload?.id) return ctx.unauthorized("Token invalide ou manquant");
