@@ -80,6 +80,12 @@
     },
     {
       method: 'GET',
+      path: '/legal/privacy',
+      handler: 'legal.privacy',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
       path: '/profile/me',
       handler: 'profile.me',
       config: { auth: false },
