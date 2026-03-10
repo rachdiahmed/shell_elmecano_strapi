@@ -30,21 +30,27 @@ const pickFallbackLocale = (locale: "fr-FR" | "ar-TN"): "fr-FR" | "ar-TN" =>
 export default {
   async privacy(ctx: Context) {
     const locale = normalizeLocale((ctx.request.query as any)?.locale);
+    const privacyPolicyDocuments = (
+      strapi.documents as unknown as (uid: string) => {
+        findFirst: (query: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
+      }
+    )("api::privacy-policy.privacy-policy");
+
     const query = {
       fields: ["title", "content"] as any,
       status: "published" as const,
       locale,
     };
 
-    let entry = (await strapi.documents("api::privacy-policy.privacy-policy").findFirst(query as any)) as any;
+    let entry = (await privacyPolicyDocuments.findFirst(query as any)) as any;
     if (!entry) {
-      entry = (await strapi.documents("api::privacy-policy.privacy-policy").findFirst({
+      entry = (await privacyPolicyDocuments.findFirst({
         ...query,
         locale: pickFallbackLocale(locale),
       } as any)) as any;
     }
     if (!entry) {
-      entry = (await strapi.documents("api::privacy-policy.privacy-policy").findFirst({
+      entry = (await privacyPolicyDocuments.findFirst({
         ...query,
         locale: undefined,
       } as any)) as any;
@@ -60,4 +66,3 @@ export default {
     };
   },
 };
-
