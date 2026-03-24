@@ -8,7 +8,7 @@ type GainOrderStatus =
   | "delivered"
   | "cancelled";
 
-const CLAIM_STEP = 5;
+const CLAIM_STEP = 10;
 const DEFAULT_HISTORY_PAGE_SIZE = 5;
 
 const toNumber = (value: unknown): number => {
@@ -41,7 +41,10 @@ const normalizeOrder = (order: any) => ({
 const buildOrderCode = (): string => {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const rand = (n: number) =>
-    Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    Array.from(
+      { length: n },
+      () => chars[Math.floor(Math.random() * chars.length)],
+    ).join("");
   return `#${rand(4)}-${rand(4)}`;
 };
 
@@ -63,39 +66,43 @@ const parsePositiveInt = (value: unknown, fallback: number): number => {
 
 const buildOverview = async (
   account: any,
-  options?: { page?: number; pageSize?: number }
+  options?: { page?: number; pageSize?: number },
 ) => {
   const page = parsePositiveInt(options?.page, 1);
   const pageSize = parsePositiveInt(
     options?.pageSize,
-    DEFAULT_HISTORY_PAGE_SIZE
+    DEFAULT_HISTORY_PAGE_SIZE,
   );
   const start = (page - 1) * pageSize;
   const balance = round3(toNumber(account?.gains));
   const claimableAmount = Math.floor(balance / CLAIM_STEP) * CLAIM_STEP;
 
-  const nonDelivered = await strapi.documents("api::gain-order.gain-order").findMany({
-    filters: {
-      account: { documentId: { $eq: account.documentId } },
-      orderStatus: { $in: ["validating", "processing", "shipping"] },
-    },
-    sort: ["requestedAt:desc", "createdAt:desc"],
-    status: "published",
-    populate: ["createdBy", "updatedBy"],
-    limit: 1,
-  } as any);
+  const nonDelivered = await strapi
+    .documents("api::gain-order.gain-order")
+    .findMany({
+      filters: {
+        account: { documentId: { $eq: account.documentId } },
+        orderStatus: { $in: ["validating", "processing", "shipping"] },
+      },
+      sort: ["requestedAt:desc", "createdAt:desc"],
+      status: "published",
+      populate: ["createdBy", "updatedBy"],
+      limit: 1,
+    } as any);
 
-  const historyOrders = await strapi.documents("api::gain-order.gain-order").findMany({
-    filters: {
-      account: { documentId: { $eq: account.documentId } },
-      orderStatus: { $in: ["delivered", "cancelled"] },
-    },
-    sort: ["deliveredAt:desc", "requestedAt:desc", "createdAt:desc"],
-    status: "published",
-    populate: ["createdBy", "updatedBy"],
-    start,
-    limit: pageSize,
-  } as any);
+  const historyOrders = await strapi
+    .documents("api::gain-order.gain-order")
+    .findMany({
+      filters: {
+        account: { documentId: { $eq: account.documentId } },
+        orderStatus: { $in: ["delivered", "cancelled"] },
+      },
+      sort: ["deliveredAt:desc", "requestedAt:desc", "createdAt:desc"],
+      status: "published",
+      populate: ["createdBy", "updatedBy"],
+      start,
+      limit: pageSize,
+    } as any);
 
   const historyTotal = await (strapi.db as any)
     .query("api::gain-order.gain-order")
@@ -135,7 +142,7 @@ export default {
     const page = parsePositiveInt((ctx.query as any)?.page, 1);
     const pageSize = parsePositiveInt(
       (ctx.query as any)?.pageSize,
-      DEFAULT_HISTORY_PAGE_SIZE
+      DEFAULT_HISTORY_PAGE_SIZE,
     );
     ctx.body = await buildOverview(account, { page, pageSize });
   },
@@ -147,15 +154,17 @@ export default {
     const account = await findAccountForUser(payload.id as number);
     if (!account) return ctx.notFound("Compte introuvable");
 
-    const existingActiveOrder = await strapi.documents("api::gain-order.gain-order").findMany({
-      filters: {
-        account: { documentId: { $eq: account.documentId } },
-        orderStatus: { $in: ["validating", "processing", "shipping"] },
-      },
-      sort: ["requestedAt:desc", "createdAt:desc"],
-      status: "published",
-      limit: 1,
-    } as any);
+    const existingActiveOrder = await strapi
+      .documents("api::gain-order.gain-order")
+      .findMany({
+        filters: {
+          account: { documentId: { $eq: account.documentId } },
+          orderStatus: { $in: ["validating", "processing", "shipping"] },
+        },
+        sort: ["requestedAt:desc", "createdAt:desc"],
+        status: "published",
+        limit: 1,
+      } as any);
     if (existingActiveOrder.length > 0) {
       return ctx.conflict("Active order exists");
     }
