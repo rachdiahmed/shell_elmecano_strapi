@@ -100,21 +100,32 @@ export const normalizeAccount = (account: any) => {
   const rawUrl =
     (Array.isArray(image) ? image[0]?.url : image?.url) ??
     (Array.isArray(image?.data) ? image.data[0]?.url : image?.data?.url);
+  const profileCompletion = computeProfileCompletion(account);
+  const hasCompletedProfile = profileCompletion === 100;
   return {
     ...account,
     profileImageUrl: toAbsoluteUrl(rawUrl),
+    hasCompletedProfile,
+    profileCompletion,
+    remainingTasks: computeRemainingTasks(account),
   };
 };
 
+export const computeProfileCompletion = (source: any): number => {
+  const fields = [
+    String(source?.garageName ?? "").trim().length > 0,
+    String(source?.address ?? "").trim().length > 0,
+    String(source?.birthDate ?? "").trim().length > 0,
+    String(source?.postalCode ?? "").trim().length > 0,
+  ];
+  return fields.filter(Boolean).length * 25;
+};
+
+export const computeRemainingTasks = (source: any): number => {
+  const completion = computeProfileCompletion(source);
+  return Math.max(0, 4 - Math.floor(completion / 25));
+};
+
 export const computeHasCompletedProfile = (source: any): boolean => {
-  const garageName = String(source?.garageName ?? "").trim();
-  const address = String(source?.address ?? "").trim();
-  const birthDate = String(source?.birthDate ?? "").trim();
-  const postalCode = String(source?.postalCode ?? "").trim();
-  return (
-    garageName.length > 0 &&
-    address.length > 0 &&
-    birthDate.length > 0 &&
-    postalCode.length > 0
-  );
+  return computeProfileCompletion(source) === 100;
 };
