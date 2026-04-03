@@ -32,40 +32,6 @@ const auditMeta = (entity: any) => ({
     : null,
 });
 
-const stripHtml = (raw: string): string => {
-  return raw
-    .replace(/<li[^>]*>/gi, "• ")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
-};
-
-const richTextToPlainText = (raw: unknown): string => {
-  if (typeof raw === "string") {
-    return stripHtml(raw);
-  }
-
-  const walk = (node: unknown): string[] => {
-    if (node == null) return [];
-    if (typeof node === "string") return [node];
-    if (Array.isArray(node)) return node.flatMap(walk);
-    if (typeof node === "object") {
-      const obj = node as Record<string, unknown>;
-      const direct = typeof obj.text === "string" ? [obj.text] : [];
-      const children = walk(obj.children);
-      return [...direct, ...children];
-    }
-    return [];
-  };
-
-  return walk(raw).join(" ").replace(/\s+/g, " ").trim();
-};
-
 const toInt = (value: unknown): number => {
   const parsed = Number(value ?? 0);
   if (!Number.isFinite(parsed)) return 0;
@@ -118,9 +84,6 @@ export default {
             .map((product) => ({
               id: String(product.documentId ?? product.id ?? ""),
               name: String(product.name ?? "").trim(),
-              subtitle: String(product.subtitle ?? ""),
-              cardShortDescription: String(product.cardShortDescription ?? ""),
-              description: richTextToPlainText(product.description),
               viscosity: String(product.viscosity ?? ""),
               reference: String(product.reference ?? ""),
               sku: String(product.sku ?? ""),
@@ -181,3 +144,4 @@ export default {
     ctx.body = { categories: mapped };
   },
 };
+

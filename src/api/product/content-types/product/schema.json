@@ -25,33 +25,6 @@
         }
       }
     },
-    "subtitle": {
-      "type": "string",
-      "required": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "cardShortDescription": {
-      "type": "string",
-      "required": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "description": {
-      "type": "richtext",
-      "required": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
     "viscosity": {
       "type": "string",
       "required": false,
