@@ -66,6 +66,12 @@ const richTextToPlainText = (raw: unknown): string => {
   return walk(raw).join(" ").replace(/\s+/g, " ").trim();
 };
 
+const toInt = (value: unknown): number => {
+  const parsed = Number(value ?? 0);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.round(parsed));
+};
+
 export default {
   async list(ctx: Context) {
     const payload = await verifyBearer(ctx);
@@ -118,6 +124,18 @@ export default {
               viscosity: String(product.viscosity ?? ""),
               reference: String(product.reference ?? ""),
               sku: String(product.sku ?? ""),
+              engineCleaning: toInt(product.engineCleaning),
+              wearProtection: toInt(product.wearProtection),
+              heatResistance: toInt(product.heatResistance),
+              coldPerformance: toInt(product.coldPerformance),
+              lowEvaporation: toInt(product.lowEvaporation),
+              longLife: toInt(product.longLife),
+              multiFuelCompatibility: toInt(product.multiFuelCompatibility),
+              engineResponsiveness: toInt(product.engineResponsiveness),
+              apiSpecification: String(product.apiSpecification ?? ""),
+              aceaSpecification: String(product.aceaSpecification ?? ""),
+              caterpillarSpecification: String(product.caterpillarSpecification ?? ""),
+              jasoSpecification: String(product.jasoSpecification ?? ""),
               gainVidange: Number(product.gainVidange ?? 0),
               order: Number(product.order ?? 0),
               imageUrl: mediaUrl(product.image),
