@@ -35,6 +35,48 @@ const statusLabel = (value: string): string => {
   }
 };
 
+const toNumber = (value: unknown): number => {
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const round3 = (value: number): number => Math.round(value * 1000) / 1000;
+
+const shouldRefundOnCancel = (
+  previousStatus: string,
+  nextStatus: string,
+): boolean => {
+  if (nextStatus !== "cancelled") return false;
+  return ["validating", "processing", "shipping"].includes(previousStatus);
+};
+
+const refundCancelledOrderAmount = async (order: any) => {
+  const accountDocumentId = String(
+    order?.account?.documentId ?? order?.account?.id ?? "",
+  ).trim();
+  if (!accountDocumentId) return;
+
+  const account = await strapi.documents("api::account.account").findOne({
+    documentId: accountDocumentId,
+    fields: ["gains"] as any,
+    status: "published",
+  } as any);
+
+  if (!account) return;
+
+  const refundedAmount = round3(toNumber(order?.amount));
+  if (refundedAmount <= 0) return;
+
+  const currentGains = round3(toNumber(account.gains));
+  await strapi.documents("api::account.account").update({
+    documentId: accountDocumentId,
+    data: {
+      gains: round3(currentGains + refundedAmount),
+    } as any,
+    status: "published",
+  } as any);
+};
+
 const notifyOrderStatusChange = async (order: any, previousStatus: string) => {
   const debugPush = String(process.env.FCM_DEBUG ?? "").trim() === "1";
   const nextStatus = String(order?.orderStatus ?? "").trim();
@@ -136,7 +178,7 @@ export default {
     }
     const full = await strapi.documents("api::gain-order.gain-order").findOne({
       documentId: String(result.documentId ?? ""),
-      fields: ["documentId", "code", "orderStatus"] as any,
+      fields: ["documentId", "code", "orderStatus", "amount"] as any,
       populate: {
         account: {
           fields: ["documentId"] as any,
@@ -145,6 +187,9 @@ export default {
     } as any);
 
     if (!full) return;
+    if (shouldRefundOnCancel(previousStatus, String(full.orderStatus ?? ""))) {
+      await refundCancelledOrderAmount(full);
+    }
     await notifyOrderStatusChange(full, previousStatus);
   },
 };
