@@ -47,6 +47,11 @@
       "type": "datetime",
       "required": false
     },
+    "cancelRefundApplied": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
     "account": {
       "type": "relation",
       "relation": "manyToOne",

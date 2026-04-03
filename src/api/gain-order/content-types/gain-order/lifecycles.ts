@@ -77,6 +77,17 @@ const refundCancelledOrderAmount = async (order: any) => {
   } as any);
 };
 
+const markCancelRefundApplied = async (orderDocumentId: string) => {
+  if (!orderDocumentId) return;
+  await strapi.documents("api::gain-order.gain-order").update({
+    documentId: orderDocumentId,
+    data: {
+      cancelRefundApplied: true,
+    } as any,
+    status: "published",
+  } as any);
+};
+
 const notifyOrderStatusChange = async (order: any, previousStatus: string) => {
   const debugPush = String(process.env.FCM_DEBUG ?? "").trim() === "1";
   const nextStatus = String(order?.orderStatus ?? "").trim();
@@ -137,9 +148,11 @@ export default {
       if (documentId) {
         const existing = await strapi.documents("api::gain-order.gain-order").findOne({
           documentId,
-          fields: ["orderStatus"] as any,
+          fields: ["orderStatus", "cancelRefundApplied"] as any,
         } as any);
         event.state.previousStatus = String(existing?.orderStatus ?? "");
+        event.state.previousCancelRefundApplied =
+          existing?.cancelRefundApplied === true;
         if (String(process.env.FCM_DEBUG ?? "").trim() === "1") {
           strapi.log.info(
             `[FCM][gain-order] beforeUpdate doc=${documentId} previousStatus=${event.state.previousStatus || "-"}`
@@ -152,9 +165,11 @@ export default {
           .query("api::gain-order.gain-order")
           .findOne({
             where: { id },
-            select: ["orderStatus"],
+            select: ["orderStatus", "cancelRefundApplied"],
           });
         event.state.previousStatus = String(existing?.orderStatus ?? "");
+        event.state.previousCancelRefundApplied =
+          existing?.cancelRefundApplied === true;
         if (String(process.env.FCM_DEBUG ?? "").trim() === "1") {
           strapi.log.info(
             `[FCM][gain-order] beforeUpdate id=${id} previousStatus=${event.state.previousStatus || "-"}`
@@ -163,6 +178,7 @@ export default {
       }
     } catch {
       event.state.previousStatus = "";
+      event.state.previousCancelRefundApplied = false;
     }
   },
 
@@ -171,6 +187,8 @@ export default {
     if (!result) return;
 
     const previousStatus = String(event?.state?.previousStatus ?? "");
+    const previousCancelRefundApplied =
+      event?.state?.previousCancelRefundApplied === true;
     if (String(process.env.FCM_DEBUG ?? "").trim() === "1") {
       strapi.log.info(
         `[FCM][gain-order] afterUpdate doc=${String(result.documentId ?? "-")} previousStatus=${previousStatus || "-"}`
@@ -178,7 +196,13 @@ export default {
     }
     const full = await strapi.documents("api::gain-order.gain-order").findOne({
       documentId: String(result.documentId ?? ""),
-      fields: ["documentId", "code", "orderStatus", "amount"] as any,
+      fields: [
+        "documentId",
+        "code",
+        "orderStatus",
+        "amount",
+        "cancelRefundApplied",
+      ] as any,
       populate: {
         account: {
           fields: ["documentId"] as any,
@@ -187,8 +211,13 @@ export default {
     } as any);
 
     if (!full) return;
-    if (shouldRefundOnCancel(previousStatus, String(full.orderStatus ?? ""))) {
+    if (
+      shouldRefundOnCancel(previousStatus, String(full.orderStatus ?? "")) &&
+      !previousCancelRefundApplied &&
+      full.cancelRefundApplied !== true
+    ) {
       await refundCancelledOrderAmount(full);
+      await markCancelRefundApplied(String(full.documentId ?? ""));
     }
     await notifyOrderStatusChange(full, previousStatus);
   },
