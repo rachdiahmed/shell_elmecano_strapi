@@ -152,7 +152,7 @@ export default {
         } as any);
         event.state.previousStatus = String(existing?.orderStatus ?? "");
         event.state.previousCancelRefundApplied =
-          existing?.cancelRefundApplied === true;
+          (existing as any)?.cancelRefundApplied === true;
         if (String(process.env.FCM_DEBUG ?? "").trim() === "1") {
           strapi.log.info(
             `[FCM][gain-order] beforeUpdate doc=${documentId} previousStatus=${event.state.previousStatus || "-"}`
@@ -169,7 +169,7 @@ export default {
           });
         event.state.previousStatus = String(existing?.orderStatus ?? "");
         event.state.previousCancelRefundApplied =
-          existing?.cancelRefundApplied === true;
+          (existing as any)?.cancelRefundApplied === true;
         if (String(process.env.FCM_DEBUG ?? "").trim() === "1") {
           strapi.log.info(
             `[FCM][gain-order] beforeUpdate id=${id} previousStatus=${event.state.previousStatus || "-"}`
@@ -214,7 +214,7 @@ export default {
     if (
       shouldRefundOnCancel(previousStatus, String(full.orderStatus ?? "")) &&
       !previousCancelRefundApplied &&
-      full.cancelRefundApplied !== true
+      (full as any).cancelRefundApplied !== true
     ) {
       await refundCancelledOrderAmount(full);
       await markCancelRefundApplied(String(full.documentId ?? ""));
